@@ -1,4 +1,18 @@
-FROM python:3.9.16-slim-buster
+# Base Image
+FROM python:3.9-slim
+
+# Work directory
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# Copy other project files
 COPY . .
-RUN pip3 install -r requirements.txt
-CMD python bootrading.py
+
+# Expose a port to Containers 
+EXPOSE 8080
+
+# Command to run on server
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
