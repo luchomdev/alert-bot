@@ -4,9 +4,8 @@ import threading
 import time
 from binance.client import Client
 import telebot
-
-# Cargar variables de entorno desde el archivo .env si estás usando python-dotenv
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Obtener variables de entorno
