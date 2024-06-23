@@ -33,7 +33,11 @@ def run_bot():
     variacion_100 = 1
     variacionfast = 3
 
-    client = Client(binance_api_key, binance_api_secret, tld='com')
+    try:
+        client = Client(binance_api_key, binance_api_secret, tld='com')
+    except Exception as e:
+        print(f'Error al inicializar cliente de Binance: {e}')
+        return
 
     def enviar_mensaje(mensaje):
         bot = telebot.TeleBot(bot_token)
