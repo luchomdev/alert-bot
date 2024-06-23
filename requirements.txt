@@ -5,3 +5,4 @@ python-binance==1.0.19
 tzdata==2024.1
 tzlocal==5.2
 python-telegram-bot==20.6
+flask==3.0.3

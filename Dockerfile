@@ -1,18 +1,17 @@
-# Base Image
-FROM python:3.9-slim
+FROM python:3.9
 
-# Work directory
+# Instalar dependencias
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# Copiar el código de la aplicación
+COPY . /app
+
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copy requirements and install dependencies
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-# Copy other project files
-COPY . .
-
-# Expose a port to Containers 
+# Exponer el puerto 8080
 EXPOSE 8080
 
-# Command to run on server
-CMD ["python", "bootrading.py", "runserver", "0.0.0.0:8000"]
+# Ejecutar el script
+CMD ["python", "tu_script.py"]
