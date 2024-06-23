@@ -37,7 +37,11 @@ def run_bot():
 
     def enviar_mensaje(mensaje):
         bot = telebot.TeleBot(bot_token)
-        bot.send_message(chat_id, mensaje)
+        try:
+            bot.send_message(chat_id, mensaje)
+            print(f'Mensaje enviado correctamente: {mensaje}')
+        except Exception as e:
+            print(f'Error al enviar mensaje: {e}')
 
     def buscarticks():
         ticks = []
