@@ -5,8 +5,8 @@ import telebot
 bot_token = '6464200383:AAGyetO2qnEe6J-f0_kfwCbJC8iDxhH1pYo'
 chat_id = '1269436309'
 
-variacion = 1  # Variacion en los ultimos 30 minutos en porcentaje
-variacion_100 = 1  # Variacion en los ultimos 30 minutos en porcentaje si tiene menos de 100k de volumen
+variacion = 5  # Variacion en los ultimos 30 minutos en porcentaje
+variacion_100 = 8  # Variacion en los ultimos 30 minutos en porcentaje si tiene menos de 100k de volumen
 variacionfast = 3  # Variacion en los ultimos 2 minutos en porcentaje
 
 client = Client('','', tld='com')
