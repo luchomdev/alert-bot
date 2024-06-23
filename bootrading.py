@@ -20,8 +20,8 @@ def run_bot():
     binance_api_key = os.getenv('BINANCE_API_KEY')
     binance_api_secret = os.getenv('BINANCE_API_SECRET')
 
-    variacion = 5
-    variacion_100 = 8
+    variacion = 1
+    variacion_100 = 1
     variacionfast = 3
 
     client = Client(binance_api_key, binance_api_secret, tld='com')
