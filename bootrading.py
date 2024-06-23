@@ -1,9 +1,19 @@
+import os
 from flask import Flask
 import threading
 import time
-import os
 from binance.client import Client
 import telebot
+
+# Cargar variables de entorno desde el archivo .env si estás usando python-dotenv
+from dotenv import load_dotenv
+load_dotenv()
+
+# Obtener variables de entorno
+bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+chat_id = os.getenv('TELEGRAM_CHAT_ID')
+binance_api_key = os.getenv('BINANCE_API_KEY')
+binance_api_secret = os.getenv('BINANCE_API_SECRET')
 
 # Inicializar Flask
 app = Flask(__name__)
@@ -15,11 +25,6 @@ def health_check():
 
 # Función para ejecutar el bot
 def run_bot():
-    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    binance_api_key = os.getenv('BINANCE_API_KEY')
-    binance_api_secret = os.getenv('BINANCE_API_SECRET')
-
     variacion = 1
     variacion_100 = 1
     variacionfast = 3
