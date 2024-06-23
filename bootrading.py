@@ -19,23 +19,6 @@ proxy = {
     'http': '59.144.184.73:80',
     'https': '59.144.184.73:80'
 }
-
-# URL a la que se va a hacer la solicitud
-url = 'https://www.binance.com/'
-
-try:
-    # Hacer la solicitud GET a través del proxy
-    response = requests.get(url, proxies=proxy, timeout=5)
-    
-    # Imprimir el contenido de la respuesta si la solicitud fue exitosa
-    if response.status_code == 200:
-        print(response.content)
-    else:
-        print(f'Solicitud fallida: {response.status_code}')
-        
-except requests.exceptions.RequestException as e:
-    print(f'Error en la solicitud: {e}')
-
 # Inicializar Flask
 app = Flask(__name__)
 
