@@ -14,4 +14,4 @@ WORKDIR /app
 EXPOSE 8080
 
 # Ejecutar el script
-CMD ["python", "bootrading.py"]
+CMD ["python", "bootrading.py", "runserver", "0.0.0.0:8000"]
