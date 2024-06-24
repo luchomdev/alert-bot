@@ -26,6 +26,16 @@ app = Flask(__name__)
 @app.route('/')
 def health_check():
     return "El bot está funcionando", 200
+def test_bot_token():
+    bot = telebot.TeleBot(bot_token)
+    try:
+        bot.send_message(chat_id, "Prueba de mensaje")
+        print("Mensaje de prueba enviado con éxito")
+    except Exception as e:
+        print(f"Error al enviar mensaje de prueba: {e}")
+
+# Llama a la función de prueba al iniciar la aplicación
+test_bot_token()
 
 # Función para ejecutar el bot
 def run_bot():
