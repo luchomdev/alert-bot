@@ -5,6 +5,7 @@ import time
 from binance.client import Client
 import telebot
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -14,6 +15,10 @@ chat_id = os.getenv('TELEGRAM_CHAT_ID')
 binance_api_key = os.getenv('BINANCE_API_KEY')
 binance_api_secret = os.getenv('BINANCE_API_SECRET')
 
+proxy = {
+    'http': '59.144.184.73:80',
+    'https': '59.144.184.73:80'
+}
 # Inicializar Flask
 app = Flask(__name__)
 
@@ -21,8 +26,6 @@ app = Flask(__name__)
 @app.route('/')
 def health_check():
     return "El bot está funcionando", 200
-
-# Función para enviar mensaje de prueba
 def test_bot_token():
     bot = telebot.TeleBot(bot_token)
     try:
@@ -31,39 +34,138 @@ def test_bot_token():
     except Exception as e:
         print(f"Error al enviar mensaje de prueba: {e}")
 
+# Llama a la función de prueba al iniciar la aplicación
+test_bot_token()
+
 # Función para ejecutar el bot
 def run_bot():
-    client = Client(binance_api_key, binance_api_secret, tld='com')
+    variacion = 1
+    variacion_100 = 1
+    variacionfast = 3
+
+    try:
+        client = Client(binance_api_key, binance_api_secret, tld='com')
+    except Exception as e:
+        print(f'Error al inicializar cliente de Binance: {e}')
+        return
+
+    def enviar_mensaje(mensaje):
+        bot = telebot.TeleBot(bot_token)
+        try:
+            bot.send_message(chat_id, mensaje)
+            print(f'Mensaje enviado correctamente: {mensaje}')
+        except Exception as e:
+            print(f'Error al enviar mensaje: {e}')
+
+    def buscarticks():
+        ticks = []
+        lista_ticks = client.futures_symbol_ticker()
+        print('Número de monedas encontradas #' + str(len(lista_ticks)))
+
+        for tick in lista_ticks:
+            if tick['symbol'][-4:] != 'USDT':
+                continue
+            ticks.append(tick['symbol'])
+
+        print('Número de monedas encontradas en el par USDT: #' + str(len(ticks)))
+
+        return ticks
+
+    def get_klines(tick):
+        klines = client.futures_klines(symbol=tick, interval=Client.KLINE_INTERVAL_1MINUTE, limit=30)
+        return klines
+
+    def infoticks(tick):
+        info = client.futures_ticker(symbol=tick)
+        return info
+
+    def human_format(volumen):
+        magnitude = 0
+        while abs(volumen) >= 1000:
+            magnitude += 1
+            volumen /= 1000.0
+        return '%.2f%s' % (volumen, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+
+    def porcentaje_klines(tick, klines, knumber):
+        inicial = float(klines[0][4])
+        final = float(klines[knumber][4])
+
+        # LONG
+        if inicial > final:
+            result = round(((inicial - final) / inicial) * 100, 2)
+            if result >= variacion:
+                info = infoticks(tick)
+                tipo = "LONG"
+                volumen = float(info['quoteVolume'])
+                if volumen > 100000000 or result >= variacion_100:
+                    print('LONG: ' + tick)
+                    print('Variación: ' + str(result) + '%')
+                    print('Volumen: ' + human_format(volumen))
+                    print('Precio máx: ' + info['highPrice'])
+                    print('Precio min: ' + info['lowPrice'])
+                    print('')
+                    mensaje = f'**🟢{tipo} - {tick}**\n\n'
+                    mensaje += f'**Variación:** {str(result)}%\n'
+                    mensaje += f'**Volumen:** {human_format(volumen)}%\n'
+                    mensaje += f'**Precio máx:** {info["highPrice"]}\n'
+                    mensaje += f'**Precio min:** {info["lowPrice"]}\n'
+                    enviar_mensaje(mensaje)
+
+        # SHORT
+        if final > inicial:
+            result = round(((final - inicial) / inicial) * 100, 2)
+            if result >= variacion:
+                info = infoticks(tick)
+                tipo = "SHORT"
+                volumen = float(info['quoteVolume'])
+                if volumen > 100000000 or result >= variacion_100:
+                    print('SHORT: ' + tick)
+                    print('Variación: ' + str(result) + '%')
+                    print('Volumen: ' + human_format(volumen))
+                    print('Precio máx: ' + info['highPrice'])
+                    print('Precio min: ' + info['lowPrice'])
+                    print('')
+                    mensaje = f'**🔴{tipo} - {tick}**\n\n'
+                    mensaje += f'**Variación:** {str(result)}%\n'
+                    mensaje += f'**Volumen:** {human_format(volumen)}%\n'
+                    mensaje += f'**Precio máx:** {info["highPrice"]}\n'
+                    mensaje += f'**Precio min:** {info["lowPrice"]}\n'
+                    enviar_mensaje(mensaje)
+
+        # FAST
+        if knumber >= 3:
+            inicial = float(klines[knumber-2][4])
+            final = float(klines[knumber][4])
+            if inicial < final:
+                result = round(((final - inicial) / inicial) * 100, 2)
+                if result >= variacionfast:
+                    info = infoticks(tick)
+                    volumen = float(info['quoteVolume'])
+                    print('FAST SHORT!: ' + tick)
+                    print('Variación: ' + str(result) + '%')
+                    print('Volumen: ' + human_format(volumen))
+                    print('Precio máx: ' + info['highPrice'])
+                    print('Precio min: ' + info['lowPrice'])
+                    print('')
 
     while True:
-        try:
-            ticks = client.futures_symbol_ticker()
-            for tick in ticks:
-                if tick['symbol'].endswith('USDT'):
-                    symbol = tick['symbol']
-                    klines = client.futures_klines(symbol=symbol, interval=Client.KLINE_INTERVAL_1MINUTE, limit=30)
-                    if len(klines) > 0:
-                        knumber = len(klines) - 1
-                        initial = float(klines[0][4])
-                        final = float(klines[knumber][4])
-                        result = round(((final - initial) / initial) * 100, 2)
-                        
-                        if result >= 1:  # Ejemplo de condición para enviar mensaje
-                            bot = telebot.TeleBot(bot_token)
-                            mensaje = f'Variación detectada en {symbol}: {result}%'
-                            bot.send_message(chat_id, mensaje)
-                            print(f'Mensaje enviado correctamente: {mensaje}')
-            
-            time.sleep(30)  # Espera 30 segundos antes de la próxima ejecución
-
-        except Exception as e:
-            print(f'Error al ejecutar el bot: {e}')
-            time.sleep(60)  # Espera 60 segundos antes de intentar nuevamente
+        ticks = buscarticks()
+        print('Escaneando monedas...')
+        print('')
+        for tick in ticks:
+            klines = get_klines(tick)
+            knumber = len(klines)
+            if knumber > 0:
+                knumber = knumber - 1
+                porcentaje_klines(tick, klines, knumber)
+        print('Esperando 30 segundos...')
+        print('')
+        time.sleep(30)
 
 # Iniciar el bot en un hilo separado
-if __name__ == "__main__":
-    test_bot_token()  # Envía mensaje de prueba al iniciar la aplicación
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.start()
+bot_thread = threading.Thread(target=run_bot)
+bot_thread.start()
 
-    app.run(host='0.0.0.0', port=8080)  # Inicia el servidor Flask en el puerto 8080
+# Iniciar el servidor Flask
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080)
